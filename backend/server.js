@@ -1,23 +1,26 @@
-// Loads environment variables from a .env file into process.env
-const dotenv = require("dotenv");
-dotenv.config();
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { connectDB } from './config/db.js';
 
-const express = require("express");
-const mongoose = require("mongoose");
+import authRoutes from './routes/auth.js';
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT;
 
+// Middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-async function start() {
-    app.listen(port, () =>
-        console.log(`Server running on http://localhost:${port}`)
-    );
-}
+// Database Connection
+connectDB();
 
-start().catch(err => {
-    console.error(err);
-    process.exit(1);
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Server Start
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });

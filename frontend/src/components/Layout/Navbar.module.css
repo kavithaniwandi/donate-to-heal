@@ -1,0 +1,231 @@
+/* Reset & base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Pacifico', cursive;
+  background-color: #f4f6f8;
+  color: #2E2E2E;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 18px 40px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  transition: background 0.4s ease;
+}
+
+/* Brand */
+.navbarBrand h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.navbarBrand .dot {
+  color: #e57373;
+  margin-left: 4px;
+  font-size: 2rem;
+}
+
+/* Links */
+.navbarLinks {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+}
+
+.navbarLinks li a {
+  text-decoration: none;
+  color: #2E2E2E;
+  font-size: 1.1rem;
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 5px;
+  transition: all 0.3s ease;
+}
+
+.navbarLinks li a::after {
+  content: '';
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #2E8B57;
+  transition: 0.3s ease;
+}
+
+.navbarLinks li a:hover::after,
+.navbarLinks li a.active::after {
+  width: 100%;
+}
+
+.navbarLinks li a:hover,
+.navbarLinks li a.active {
+  color: #2E8B57;
+}
+
+/* Buttons */
+.navbarButtons {
+  display: flex;
+  gap: 15px;
+}
+
+/* Default Buttons */
+.navbarButtons button {
+  padding: 10px 22px;
+  border-radius: 25px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgb(21, 20, 20);
+  background: linear-gradient(135deg, #4CAF50, #81C784);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navbarButtons .loginButton {
+  background: linear-gradient(135deg, #607D8B, #90A4AE);
+}
+
+.navbarButtons .signUpButton {
+  background: linear-gradient(135deg, #2E8B57, #66BB6A);
+}
+
+.navbarButtons .logoutButton {
+  background: linear-gradient(135deg, #4682B4, #6CA6CD);
+}
+
+.navbarButtons button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.buttonGlow {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #141111, #FFD93D); /* Warm coral to bright yellow */
+  color: #222;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 0 0 rgba(80, 64, 64, 0.7);
+  animation: glowPulse 2s infinite ease-in-out;
+  transition: transform 0.3s ease;
+}
+
+.buttonGlow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px 5px rgba(255, 214, 61, 0.8);
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 139, 87, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(46, 139, 87, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 139, 87, 0);
+  }
+}
+
+.buttonGlass {
+  padding: 10px 24px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #090909; /* Coral */
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: 15px;
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.buttonGlass:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #d94f4f;
+  box-shadow: 0 0 20px rgba(217, 79, 79, 0.5);
+}
+
+
+.buttonFlip {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6A0572, #A040A0); /* Deep purple gradient */
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.4s ease;
+  box-shadow: 0 4px 12px rgba(106, 5, 114, 0.6);
+}
+
+.buttonFlip::before {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0c0d0c, #030403);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: top 0.4s ease;
+  border-radius: 50px;
+}
+
+.buttonFlip:hover::before {
+  top: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 15px 20px;
+    text-align: center;
+  }
+
+  .navbarBrand {
+    margin-bottom: 10px;
+  }
+
+  .navbarLinks {
+    flex-direction: column;
+    gap: 20px;
+    margin: 10px 0;
+  }
+
+  .navbarButtons {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+}
