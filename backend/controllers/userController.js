@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/user";
+import User from "../models/user.js";
 
-const register = async (req, res) => {
+export const register = async (req, res) => {
 
     const { name, nic, dateofbirth, gender, phone, email, password, usertype, registrationdate } = req.body;
 
@@ -17,7 +17,8 @@ const register = async (req, res) => {
         await user.save();
 
         res.status(201).json({
-            token, user: {
+            message: "User successfuly registered",
+            user: {
                 UserId: user._id,
                 Name: user.name,
                 Email: user.email,
@@ -32,7 +33,7 @@ const register = async (req, res) => {
 };
 
 
-const viewAllUsers = async (req, res) => {
+export const viewAllUsers = async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).json(users);
@@ -43,9 +44,9 @@ const viewAllUsers = async (req, res) => {
 };
 
 
-const viewOneUser = async (req, res) => {
+export const viewOneUser = async (req, res) => {
     try {
-        const user = await User.findOne({ userId: req.params.id });
+        const user = await User.findOne({ _id: req.params.id });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -57,19 +58,18 @@ const viewOneUser = async (req, res) => {
 };
 
 
-const updateUser = async (req, res) => {
+export const updateUser = async (req, res) => {
+    const { name, nic, dateofbirth, gender, phone, email } = req.body;
+    const userId = req.params.id;
+
     try {
-        const { name, nic, dateofbirth, gender, phone, email } = req.body;
-
-        const userId = req.params.id;
-
-        const user = await User.findOne({ userId });
+        const user = await User.findById( userId );
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
         const updatedUser = await User.findByIdAndUpdate(
-            { userId },
+            userId,
             { name, nic, dateofbirth, gender, phone, email },
             { new: true }
         );
@@ -82,9 +82,11 @@ const updateUser = async (req, res) => {
 };
 
 
-const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
+    const userId = req.params.id;
+
     try {
-        const deletedUser = await User.findByIdAndDelete({ useId: req.params.id });
+        const deletedUser = await User.findByIdAndDelete(userId);
 
         if (!deletedUser) {
             return res.status(404).json({ message: "User not found" });
@@ -98,7 +100,7 @@ const deleteUser = async (req, res) => {
 };
 
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -118,5 +120,3 @@ const login = async (req, res) => {
         res.status(500).send("Server error");
     }
 };
-
-module.exports = { register, viewAllUsers, viewOneUser, updateUser, deleteUser, login }

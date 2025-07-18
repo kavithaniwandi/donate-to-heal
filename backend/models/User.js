@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+const phoneRegex = /^0\d{9}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const UserSchema = new mongoose.Schema(
