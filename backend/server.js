@@ -1,26 +1,34 @@
-import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
-import { connectDB } from './config/db.js';
-
-import authRoutes from './routes/auth.js';
-
 dotenv.config();
+
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
 
 const app = express();
 const port = process.env.PORT;
 
-// Middleware
-app.use(cors());
+// routes files
+import userRoutes from "./routes/userRoutes.js";
+
 app.use(express.json());
+app.use(cors());
 
-// Database Connection
-connectDB();
+app.use("/users", userRoutes);
 
-// Routes
-app.use('/api/auth', authRoutes);
+async function start() {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("MongoDB connected");
 
-// Server Start
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+        app.listen(port, () => {
+            console.log(`Server running on http://localhost:${port}`);
+        });
+
+    } catch (err) {
+        console.error("Failed to start server :", err);
+        process.exit(1);
+    }
+}
+
+start();
