@@ -12,6 +12,6 @@ router.get("/", viewAllUsers);
 router.get("/:id", authorization, viewOneUser);
 router.put("/:id/profile", upload.single("profileimage"), updateUserProfile);
 router.put("/:id", authorization, updateUser);
-router.delete("/:id", authorization, deleteUser);
+router.delete("/:id", deleteUser);
 
 export default router;
