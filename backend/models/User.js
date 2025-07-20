@@ -68,6 +68,11 @@ const UserSchema = new mongoose.Schema(
             }
         },
 
+        profileimage: {
+            url:    { type: String, default: null },
+            publicId: { type: String, default: null },
+        },
+
         registrationdate: {
             type: Date,
             required: [true, "Registration date is required"],

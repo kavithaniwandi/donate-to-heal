@@ -4,17 +4,19 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import path from "path";
+
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 const port = process.env.PORT;
 
 // routes files
-import userRoutes from "./routes/userRoutes.js";
+app.use("/uploads", express.static(path.resolve("uploads")));
+app.use("/users", userRoutes);
 
 app.use(express.json());
 app.use(cors());
-
-app.use("/users", userRoutes);
 
 async function start() {
     try {

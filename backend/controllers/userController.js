@@ -13,16 +13,35 @@ export const register = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        user = new User({ name, nic, dateofbirth, gender, phone, email, password: hashedPassword, usertype, registrationdate });
-        await user.save();
+        const {
+            path: secure_url = null,
+            filename: public_id = null,
+        } = req.file || {};
+
+
+        const newuser = new User({
+            name,
+            nic,
+            dateofbirth,
+            gender,
+            phone,
+            email,
+            password: hashedPassword,
+            usertype,
+            registrationdate,
+            profileimage: { url: secure_url, publicId: public_id }
+        });
+
+        await newuser.save();
 
         res.status(201).json({
             message: "User successfuly registered",
             user: {
-                UserId: user._id,
-                Name: user.name,
-                Email: user.email,
-                UserType: user.usertype
+                id: newuser._id,
+                name: newuser.name,
+                email: newuser.email,
+                profileImage: newuser.profileimage.url,
+                UserType: newuser.usertype
             }
         });
 
