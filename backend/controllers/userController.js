@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const register = async (req, res) => {
 
@@ -101,17 +102,62 @@ export const updateUser = async (req, res) => {
 };
 
 
+export const updateUserProfile = async (req, res) => {
+
+    const userId = req.params.id;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // delete old profile image from Cloudinary
+        if (user.profileimage.publicId) {
+            await cloudinary.uploader.destroy(user.profileimage.publicId);
+        }
+
+        // add new upload image info 
+        const {
+            path: secure_url = null,
+            filename: public_id = null,
+        } = req.file || {};
+
+        user.profileimage.url = secure_url;
+        user.profileimage.publicId = public_id;
+        
+        await user.save();
+
+        // respond
+        res.status(200).json({
+            message: "Profile image updated",
+            profileImage: user.profileimage.url
+        });
+
+    } catch (err) {
+        console.error("Error updating profile image:", err);
+        res.status(500).json({ message: "Failed to update profile image" });
+    }
+};
+
+
 export const deleteUser = async (req, res) => {
     const userId = req.params.id;
 
     try {
-        const deletedUser = await User.findByIdAndDelete(userId);
-
-        if (!deletedUser) {
+        const user = await User.findById(userId);
+        if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        res.status(200).json({ message: "User deleted successfully" });
+        // delete profile image from Cloudinary
+        if (user.profileimage.publicId) {
+            await cloudinary.uploader.destroy(user.profileimage.publicId);
+        }
+
+        // remove user from database
+        await User.findByIdAndDelete(userId);
+        res.status(200).json({ message: "User and profile image deleted successfully" });
 
     } catch (err) {
         res.status(500).json({ message: "Failed to delete user" });
