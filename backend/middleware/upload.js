@@ -1,22 +1,15 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
-const uploadDir = path.resolve("uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      `user-${Date.now()}${path.extname(file.originalname)}`
-    );
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "donate_to_heal_profiles",
+    allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 500, crop: "limit" }],
   },
 });
 
 const upload = multer({ storage });
-
 export default upload;

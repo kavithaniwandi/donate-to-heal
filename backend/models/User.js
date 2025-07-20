@@ -69,8 +69,8 @@ const UserSchema = new mongoose.Schema(
         },
 
         profileimage: {
-            type: String,
-            default: null,
+            url:    { type: String, default: null },
+            publicId: { type: String, default: null },
         },
 
         registrationdate: {
