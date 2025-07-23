@@ -11,6 +11,8 @@ import DonorDashboard from "./pages/donor/DonorDashboard";
 import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientRegister from "./pages/patient/patientRegister";
+import PatientCase from "./pages/patient/patientCase";
+
 
 
 function App() {
@@ -28,6 +30,8 @@ function App() {
                 <Route path="/patient-dashboard" element={<PatientDashboard />} />
                 
                 <Route path="/register/patient" element={<PatientRegister />} />
+                <Route path="/patientCase" element={<PatientCase />} />
+
 
             </Routes>
         </BrowserRouter>
