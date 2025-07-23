@@ -16,22 +16,23 @@ exports.createMedicineDonation = async (req, res) => {
     const file = req.file;
 
     if (!file) {
-      return res.status(400).json({ message: 'Courier slip file is required' });
+      return res.status(400).json({ message: 'Courier slip image is required' });
     }
 
-    // Upload to Cloudinary
-    const uploadResult = await cloudinary.uploader.upload(file.path, {
+    // Upload the file to Cloudinary
+    const result = await cloudinary.uploader.upload(file.path, {
       folder: 'courier_slips',
+      use_filename: true,
     });
 
-    // Remove file from local system
+    // Remove local temp file
     fs.unlinkSync(file.path);
 
-    // Create the donation
+    // Create and save new medicine donation
     const newDonation = new DonorMed({
       DonationRequestID,
       MedicationDonationID,
-      courierSlip: uploadResult.secure_url,
+      courierSlip: result.secure_url,
       trackingNumber,
       Company,
       Status,
@@ -39,9 +40,10 @@ exports.createMedicineDonation = async (req, res) => {
 
     const savedDonation = await newDonation.save();
     res.status(201).json(savedDonation);
+
   } catch (error) {
     console.error('Error creating medicine donation:', error);
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ message: 'Server error occurred', error });
   }
 };
 
@@ -73,17 +75,17 @@ exports.updateMedicineDonationStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    const donation = await DonorMed.findByIdAndUpdate(
+    const updated = await DonorMed.findByIdAndUpdate(
       req.params.id,
       { Status: status },
       { new: true }
     );
 
-    if (!donation) {
+    if (!updated) {
       return res.status(404).json({ message: 'Donation not found' });
     }
 
-    res.status(200).json(donation);
+    res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ message: 'Error updating status', error });
   }
