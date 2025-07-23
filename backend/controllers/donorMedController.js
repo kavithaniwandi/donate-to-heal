@@ -1,4 +1,4 @@
-const MedicineDonation = require('../models/MedicineDonation');
+const DonorMed = require('../models/donorMed');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 
@@ -10,10 +10,9 @@ exports.createMedicineDonation = async (req, res) => {
       MedicationDonationID,
       trackingNumber,
       Company,
-      Status
+      Status,
     } = req.body;
 
-    // File comes from multer
     const file = req.file;
 
     if (!file) {
@@ -22,19 +21,20 @@ exports.createMedicineDonation = async (req, res) => {
 
     // Upload to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(file.path, {
-      folder: 'courier_slips'
+      folder: 'courier_slips',
     });
 
-    // Remove file from local after upload
+    // Remove file from local system
     fs.unlinkSync(file.path);
 
-    const newDonation = new MedicineDonation({
+    // Create the donation
+    const newDonation = new DonorMed({
       DonationRequestID,
       MedicationDonationID,
       courierSlip: uploadResult.secure_url,
       trackingNumber,
       Company,
-      Status
+      Status,
     });
 
     const savedDonation = await newDonation.save();
@@ -48,7 +48,7 @@ exports.createMedicineDonation = async (req, res) => {
 // Get all medicine donations
 exports.getAllMedicineDonations = async (req, res) => {
   try {
-    const donations = await MedicineDonation.find();
+    const donations = await DonorMed.find();
     res.status(200).json(donations);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch donations', error });
@@ -58,8 +58,10 @@ exports.getAllMedicineDonations = async (req, res) => {
 // Get a specific donation by ID
 exports.getMedicineDonationById = async (req, res) => {
   try {
-    const donation = await MedicineDonation.findById(req.params.id);
-    if (!donation) return res.status(404).json({ message: 'Donation not found' });
+    const donation = await DonorMed.findById(req.params.id);
+    if (!donation) {
+      return res.status(404).json({ message: 'Donation not found' });
+    }
     res.status(200).json(donation);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching donation', error });
@@ -71,13 +73,15 @@ exports.updateMedicineDonationStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    const donation = await MedicineDonation.findByIdAndUpdate(
+    const donation = await DonorMed.findByIdAndUpdate(
       req.params.id,
       { Status: status },
       { new: true }
     );
 
-    if (!donation) return res.status(404).json({ message: 'Donation not found' });
+    if (!donation) {
+      return res.status(404).json({ message: 'Donation not found' });
+    }
 
     res.status(200).json(donation);
   } catch (error) {
