@@ -8,6 +8,7 @@ import Register from "./pages/guest/Register";
 import MedicalOfficerDashboard from "./pages/medicalOfficer/MedicalOfficerDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import DonorDashboard from "./pages/donor/DonorDashboard";
+import DonationSubmit from "./pages/donor/DonationSubmit";
 import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientRegister from "./pages/patient/patientRegister";
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/medical-officer-dashboard" element={<MedicalOfficerDashboard />} />
                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/donor-dashboard" element={<DonorDashboard />} />
+                <Route path="/donationsubmit" element={<DonationSubmit />} />
                 <Route path="/hospital-dashboard" element={<HospitalDashboard />} />
                 <Route path="/patient-dashboard" element={<PatientDashboard />} />
                 
