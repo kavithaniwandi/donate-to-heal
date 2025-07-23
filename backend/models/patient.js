@@ -1,20 +1,46 @@
-
 import mongoose from "mongoose";
-import User from "./User.js";
 
 const phoneRegex = /^0\d{9}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const nicRegex = /^[0-9]{9}[vVxX]?$|^[0-9]{12}$/; // Matches old (9 digits + V/X) and new (12 digits) NIC formats
 
 const PatientSchema = new mongoose.Schema(
     {
         patientId: {
-            type: String
+            type: String,
         },
 
-        name: {
+        fullname: {
             type: String,
-            required: [true, "Patient name is required"],
+            required: [true, "Full name is required"],
             trim: true,
+        },
+
+        dateofbirth: {
+            type: Date,
+            required: [true, "Date of birth is required"],
+        },
+
+        nic: {
+            type: String,
+            required: [true, "NIC is required"],
+            unique: true,
+            validate: {
+                validator: (v) => nicRegex.test(v),
+                message: (props) => `${props.value} is not a valid NIC`,
+            },
+        },
+
+        medicalofficer: {
+            type: String,
+            required: [true, "Medical Officer name is required"],
+            trim: true,
+        },
+
+        gender: {
+            type: String,
+            required: true,
+            enum: ["Male", "Female", "Other"],
         },
 
         phone: {
@@ -26,58 +52,38 @@ const PatientSchema = new mongoose.Schema(
             },
         },
 
-        email: {
+        username: {
             type: String,
-            required: [true, "Email is required"],
+            required: [true, "Username is required"],
             unique: true,
-            lowercase: true,
             trim: true,
-            validate: {
-                validator: (v) => emailRegex.test(v),
-                message: (props) => `${props.value} is not a valid email address`,
-            },
         },
 
-        dateOfBirth: {
-            type: Date,
-            required: [true, "Date of birth is required"],
-        },
-
-        gender: {
+        password: {
             type: String,
-            required: [true, "Gender is required"],
-            enum: ["Male", "Female", "Other"],
+            required: [true, "Password is required"],
+            minlength: [4, "Password must be at least 4 characters"],
         },
 
         address: {
             type: String,
             required: [true, "Address is required"],
-            trim: true,
         },
 
-        prescriptionFiles: [
-            {
-                url: { type: String, default: null },
-                publicId: { type: String, default: null }
-            }
-        ],
+        gramaSewakaCertificate: {
+            url: { type: String, default: null },
+            publicId: { type: String, default: null },
+        },
 
-        verificationDocs: [
-            {
-                url: { type: String, default: null },
-                publicId: { type: String, default: null }
-            }
-        ],
-
-        registrationDate: {
+        registrationdate: {
             type: Date,
-            required: true,
             default: Date.now,
         },
-    }
+    },
+    { timestamps: true }
 );
 
-// Auto-generate sequential patientId: P-0001, P-0002, etc.
+// Auto-generate Patient ID
 PatientSchema.pre("save", async function (next) {
     if (this.isNew) {
         const lastPatient = await this.constructor
