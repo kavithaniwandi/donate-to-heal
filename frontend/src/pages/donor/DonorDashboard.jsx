@@ -1,6 +1,6 @@
+// ... imports remain unchanged
 import { useState } from 'react';
 
-// Inline Navbar component
 function Navbar() {
     return (
         <nav className="bg-blue-700 text-white px-6 py-3 shadow">
@@ -21,43 +21,20 @@ export default function DonorDashboard() {
     const [selectedSeeker, setSelectedSeeker] = useState(null);
     const [formData, setFormData] = useState({
         moneyDonation: {
-            patientNIC: '',
-            hospitalName: '',
-            wardNumber: '',
+            DonationRequestID: '',
+            CashDonationID: '',
             amount: '',
-            paymentMethod: 'card',
-            description: ''
+            Status: 'Pending'
         },
         medicineDonation: {
-            courierSlipNumber: '',
-            medicineDetails: '',
-            quantity: '',
-            expiryDate: '',
-            courierService: '',
+            DonationRequestID: '',
+            MedicationDonationID: '',
+            courierSlip: '', // Replace with file object on actual upload
             trackingNumber: '',
-            additionalNotes: ''
+            Company: '',
+            Status: 'Pending'
         }
     });
-
-    const donationSeekers = [
-        { id: 1, name: 'Amal Perera', need: 'Kidney Treatment' },
-        { id: 2, name: 'Nirmala Fernando', need: 'Heart Surgery' },
-        { id: 3, name: 'Ruwan Jayasuriya', need: 'Cancer Medication' },
-    ];
-
-    const donationHistory = [
-        { id: 1, type: 'Money', amount: 'LKR 5000', seeker: 'Amal Perera', date: '2025-07-15' },
-        { id: 2, type: 'Medicine', seeker: 'Nirmala Fernando', courier: 'DHL-001122', date: '2025-07-10' },
-    ];
-
-    const handleDonateClick = (seeker) => {
-        setSelectedSeeker(seeker);
-        setView('choose');
-    };
-
-    const handleDonationType = (type) => {
-        setView(type);
-    };
 
     const handleFormChange = (type, field, value) => {
         setFormData(prev => ({
@@ -69,16 +46,44 @@ export default function DonorDashboard() {
         }));
     };
 
+    const handleDonateClick = (seeker) => {
+        setSelectedSeeker(seeker);
+        // Auto-fill DonationRequestID when donor clicks "Donate"
+        setFormData(prev => ({
+            ...prev,
+            moneyDonation: { ...prev.moneyDonation, DonationRequestID: `REQ-${seeker.id}` },
+            medicineDonation: { ...prev.medicineDonation, DonationRequestID: `REQ-${seeker.id}` }
+        }));
+        setView('choose');
+    };
+
+    const handleDonationType = (type) => {
+        // Generate fake Donation IDs for demo purpose
+        const id = Date.now().toString();
+        if (type === 'money') {
+            setFormData(prev => ({
+                ...prev,
+                moneyDonation: { ...prev.moneyDonation, CashDonationID: `CASH-${id}` }
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                medicineDonation: { ...prev.medicineDonation, MedicationDonationID: `MED-${id}` }
+            }));
+        }
+        setView(type);
+    };
+
     const handleMoneyDonationSubmit = (e) => {
         e.preventDefault();
-        console.log('Money donation:', formData.moneyDonation);
+        console.log('Money Donation Submitted:', formData.moneyDonation);
         alert('Money donation submitted successfully!');
         setView('list');
     };
 
     const handleMedicineDonationSubmit = (e) => {
         e.preventDefault();
-        console.log('Medicine donation:', formData.medicineDonation);
+        console.log('Medicine Donation Submitted:', formData.medicineDonation);
         alert('Medicine donation submitted successfully!');
         setView('list');
     };
@@ -89,11 +94,15 @@ export default function DonorDashboard() {
             <div className="p-6 max-w-4xl mx-auto space-y-8">
                 <h1 className="text-3xl font-bold text-center text-blue-700">Donor Dashboard</h1>
 
+                {/* Seekers list */}
                 {view === 'list' && (
                     <div>
                         <h2 className="text-xl font-semibold mb-4">Donation Seekers</h2>
                         <ul className="space-y-4">
-                            {donationSeekers.map((seeker) => (
+                            {[
+                                { id: 1, name: 'Amal Perera', need: 'Kidney Treatment' },
+                                { id: 2, name: 'Nirmala Fernando', need: 'Heart Surgery' }
+                            ].map(seeker => (
                                 <li key={seeker.id} className="p-4 border rounded shadow flex justify-between items-center">
                                     <div>
                                         <p className="font-medium">{seeker.name}</p>
@@ -111,177 +120,72 @@ export default function DonorDashboard() {
                     </div>
                 )}
 
+                {/* Choose donation type */}
                 {view === 'choose' && selectedSeeker && (
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">
+                    <div className="space-y-4 text-center">
+                        <h2 className="text-xl font-semibold">
                             Choose Donation Type for {selectedSeeker.name}
                         </h2>
                         <div className="flex justify-center gap-6">
-                            <button
-                                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-                                onClick={() => handleDonationType('money')}
-                            >
+                            <button className="bg-green-600 text-white px-6 py-2 rounded" onClick={() => handleDonationType('money')}>
                                 Donate Money
                             </button>
-                            <button
-                                className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700"
-                                onClick={() => handleDonationType('medicine')}
-                            >
+                            <button className="bg-purple-600 text-white px-6 py-2 rounded" onClick={() => handleDonationType('medicine')}>
                                 Donate Medicine
                             </button>
                         </div>
                     </div>
                 )}
 
-                {view === 'money' && selectedSeeker && (
-                    <div className="bg-white p-6 border rounded shadow">
-                        <h2 className="text-xl font-semibold mb-4">
-                            Money Donation for {selectedSeeker.name}
-                        </h2>
-                        <form onSubmit={handleMoneyDonationSubmit} className="space-y-4">
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Patient NIC"
-                                value={formData.moneyDonation.patientNIC}
-                                onChange={(e) => handleFormChange('moneyDonation', 'patientNIC', e.target.value)}
-                                required
-                            />
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Hospital Name"
-                                value={formData.moneyDonation.hospitalName}
-                                onChange={(e) => handleFormChange('moneyDonation', 'hospitalName', e.target.value)}
-                                required
-                            />
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Ward Number"
-                                value={formData.moneyDonation.wardNumber}
-                                onChange={(e) => handleFormChange('moneyDonation', 'wardNumber', e.target.value)}
-                            />
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="number"
-                                placeholder="Amount (LKR)"
-                                value={formData.moneyDonation.amount}
-                                onChange={(e) => handleFormChange('moneyDonation', 'amount', e.target.value)}
-                                required
-                            />
-                            <select
-                                className="w-full border p-2 rounded"
-                                value={formData.moneyDonation.paymentMethod}
-                                onChange={(e) => handleFormChange('moneyDonation', 'paymentMethod', e.target.value)}
-                            >
-                                <option value="card">Credit/Debit Card</option>
-                                <option value="bank">Bank Transfer</option>
-                            </select>
-                            <textarea
-                                className="w-full border p-2 rounded"
-                                placeholder="Additional Notes"
-                                rows="3"
-                                value={formData.moneyDonation.description}
-                                onChange={(e) => handleFormChange('moneyDonation', 'description', e.target.value)}
-                            />
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                            >
-                                Proceed to Payment
-                            </button>
-                        </form>
-                    </div>
+                {/* Money donation form */}
+                {view === 'money' && (
+                    <form onSubmit={handleMoneyDonationSubmit} className="bg-white p-6 shadow rounded space-y-4">
+                        <h2 className="text-xl font-semibold">Money Donation</h2>
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Cash Donation ID"
+                            value={formData.moneyDonation.CashDonationID} readOnly />
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Donation Request ID"
+                            value={formData.moneyDonation.DonationRequestID} readOnly />
+                        <input type="number" className="w-full border p-2 rounded" placeholder="Amount (LKR)"
+                            value={formData.moneyDonation.amount}
+                            onChange={(e) => handleFormChange('moneyDonation', 'amount', e.target.value)} required />
+                        <select className="w-full border p-2 rounded"
+                            value={formData.moneyDonation.Status}
+                            onChange={(e) => handleFormChange('moneyDonation', 'Status', e.target.value)} required>
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full">Submit Donation</button>
+                    </form>
                 )}
 
-                {view === 'medicine' && selectedSeeker && (
-                    <div className="bg-white p-6 border rounded shadow">
-                        <h2 className="text-xl font-semibold mb-4">
-                            Medicine Donation for {selectedSeeker.name}
-                        </h2>
-                        <form onSubmit={handleMedicineDonationSubmit} className="space-y-4">
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Courier Slip Number"
-                                value={formData.medicineDonation.courierSlipNumber}
-                                onChange={(e) => handleFormChange('medicineDonation', 'courierSlipNumber', e.target.value)}
-                                required
-                            />
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Medicine Details"
-                                value={formData.medicineDonation.medicineDetails}
-                                onChange={(e) => handleFormChange('medicineDonation', 'medicineDetails', e.target.value)}
-                                required
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <input
-                                    className="border p-2 rounded"
-                                    type="number"
-                                    placeholder="Quantity"
-                                    value={formData.medicineDonation.quantity}
-                                    onChange={(e) => handleFormChange('medicineDonation', 'quantity', e.target.value)}
-                                    required
-                                />
-                                <input
-                                    className="border p-2 rounded"
-                                    type="date"
-                                    placeholder="Expiry Date"
-                                    value={formData.medicineDonation.expiryDate}
-                                    onChange={(e) => handleFormChange('medicineDonation', 'expiryDate', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Courier Service"
-                                value={formData.medicineDonation.courierService}
-                                onChange={(e) => handleFormChange('medicineDonation', 'courierService', e.target.value)}
-                                required
-                            />
-                            <input
-                                className="w-full border p-2 rounded"
-                                type="text"
-                                placeholder="Tracking Number"
-                                value={formData.medicineDonation.trackingNumber}
-                                onChange={(e) => handleFormChange('medicineDonation', 'trackingNumber', e.target.value)}
-                                required
-                            />
-                            <textarea
-                                className="w-full border p-2 rounded"
-                                placeholder="Additional Notes"
-                                rows="3"
-                                value={formData.medicineDonation.additionalNotes}
-                                onChange={(e) => handleFormChange('medicineDonation', 'additionalNotes', e.target.value)}
-                            />
-                            <button
-                                type="submit"
-                                className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-                            >
-                                Submit Donation
-                            </button>
-                        </form>
-                    </div>
+                {/* Medicine donation form */}
+                {view === 'medicine' && (
+                    <form onSubmit={handleMedicineDonationSubmit} className="bg-white p-6 shadow rounded space-y-4">
+                        <h2 className="text-xl font-semibold">Medicine Donation</h2>
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Courier Slip URL (demo)"
+                            value={formData.medicineDonation.courierSlip}
+                            onChange={(e) => handleFormChange('medicineDonation', 'courierSlip', e.target.value)} required />
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Tracking Number"
+                            value={formData.medicineDonation.trackingNumber}
+                            onChange={(e) => handleFormChange('medicineDonation', 'trackingNumber', e.target.value)} />
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Courier Company"
+                            value={formData.medicineDonation.Company}
+                            onChange={(e) => handleFormChange('medicineDonation', 'Company', e.target.value)} required />
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Donation Request ID"
+                            value={formData.medicineDonation.DonationRequestID} readOnly />
+                        <input type="text" className="w-full border p-2 rounded" placeholder="Medication Donation ID"
+                            value={formData.medicineDonation.MedicationDonationID} readOnly />
+                        <select className="w-full border p-2 rounded"
+                            value={formData.medicineDonation.Status}
+                            onChange={(e) => handleFormChange('medicineDonation', 'Status', e.target.value)} required>
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded w-full">Submit Donation</button>
+                    </form>
                 )}
-
-                <div className="pt-8">
-                    <h2 className="text-xl font-semibold mb-4">Donation History</h2>
-                    <ul className="space-y-3">
-                        {donationHistory.map((donation) => (
-                            <li key={donation.id} className="p-4 border rounded bg-gray-50">
-                                <p className="font-medium">Type: {donation.type}</p>
-                                <p>Recipient: {donation.seeker}</p>
-                                {donation.amount && <p>Amount: {donation.amount}</p>}
-                                {donation.courier && <p>Courier: {donation.courier}</p>}
-                                <p>Date: {donation.date}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
             </div>
         </div>
     );
