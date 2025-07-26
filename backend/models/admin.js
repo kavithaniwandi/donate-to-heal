@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-const phoneRegex = /^0\d{9}$/;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 const AdminSchema = new mongoose.Schema(
     {
         adminId: {
@@ -11,17 +8,13 @@ const AdminSchema = new mongoose.Schema(
 
         name: {
             type: String,
-            required: [true, "Name is required"], 
+            required: [true, "Name is required"],
             trim: true,
         },
 
         phone: {
             type: String,
-            required: [true, "Phone number is required"],
-            validate: {
-                validator: (v) => phoneRegex.test(v),
-                message: (props) => `${props.value} is not a valid phone number`,
-            },
+            required: [true, "Phone number is required"]
         },
 
         email: {
@@ -29,23 +22,13 @@ const AdminSchema = new mongoose.Schema(
             required: [true, "Email is required"],
             unique: true,
             lowercase: true,
-            trim: true,
-            validate: {
-                validator: (v) => emailRegex.test(v),
-                message: (props) => `${props.value} is not a valid email address`,
-            },
-        },
-
-        password: {
-            type: String,
-            required: [true, "Password is required"],
-            minlength: [4, "Password must be at least 4 characters"],
+            trim: true
         },
 
         usertype: {
             type: String,
             required: true,
-            enum: ["Patient", "Donor", "Admin", "Hospital"],
+            default: "Admin"
         },
 
         profileimage: {
@@ -56,8 +39,8 @@ const AdminSchema = new mongoose.Schema(
         registrationdate: {
             type: Date,
             required: [true, "Registration date is required"],
-            default: Date.now,
-        },
+            default: Date.now
+        }
     }
 );
 
@@ -73,7 +56,6 @@ AdminSchema.pre("save", async function (next) {
 
         let nextNumber = 1;
         if (lastAdmin && lastAdmin.adminId) {
-
             const parts = lastAdmin.adminId.split("-");
             nextNumber = parseInt(parts[1], 10) + 1;
         }
