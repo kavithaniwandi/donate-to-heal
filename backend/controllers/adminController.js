@@ -5,54 +5,48 @@ import Admin from "../models/admin.js";
 import cloudinary from "../config/cloudinary.js";
 
 export const registerAdmin = async (req, res) => {
-
-    const { name, phone, email, password, usertype, registrationdate } = req.body;
-
     try {
-        let admin = await Admin.findOne({ email });
-        if (admin) return res.status(400).json({ message: "Admin already exists" });
+        const { name, phone, email, password } = req.body;
+
+        if (await User.exists({ email })) {
+            return res.status(400).json({ message: "Email is already in use" });
+        }
 
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPass = await bcrypt.hash(password, salt);
 
         const {
             path: secure_url = null,
-            filename: public_id = null,
+            filename: public_id = null
         } = req.file || {};
 
-
-        const newUser = new User({
-            email,
-            password: hashedPassword,
-            usertype
-        });
-
-        const newAdmin = new Admin({
-            name,
-            phone,
-            email,
-            password: hashedPassword,
-            usertype,
-            registrationdate,
-            profileimage: { url: secure_url, publicId: public_id }
-        });
-
-        await newUser.save();
-        await newAdmin.save();
+        const [newUser, newAdmin] = await Promise.all([
+            User.create({
+                email,
+                password: hashedPass,
+                usertype: "Admin"
+            }),
+            Admin.create({
+                name,
+                phone,
+                email,
+                profileimage: { url: secure_url, publicId: public_id }
+            })
+        ]);
 
         res.status(201).json({
-            message: "Admin successfuly registered",
+            message: "Admin successfully registered",
             admin: {
                 adminId: newAdmin.adminId,
                 name: newAdmin.name,
                 email: newAdmin.email,
                 profileImage: newAdmin.profileimage.url,
-                UserType: newAdmin.usertype
+                usertype: newAdmin.usertype
             }
         });
 
     } catch (err) {
-        console.error("Admin registration error:", err.message);
+        console.error("Admin registration error:", err);
         res.status(500).json({ message: "Failed to register admin" });
     }
 };
@@ -62,8 +56,8 @@ export const viewAllAdmins = async (req, res) => {
     try {
         const admins = await Admin.find();
         res.status(200).json(admins);
-
     } catch (err) {
+        console.error("Error fetching admins:", err);
         res.status(500).json({ message: "Failed to retrieve admins" });
     }
 };
@@ -71,78 +65,81 @@ export const viewAllAdmins = async (req, res) => {
 
 export const viewOneAdmin = async (req, res) => {
     try {
-        const user = await Admin.findOne({ adminId: req.params.id });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const admin = await Admin.findOne({ adminId: req.params.id });
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
         }
-        res.status(200).json(user);
+        res.status(200).json(admin);
 
     } catch (err) {
-        res.status(500).json({ message: "Failed to retrieve user" });
+        console.error("Error fetching admin:", err);
+        res.status(500).json({ message: "Failed to retrieve admin" });
     }
 };
 
 
-export const updateUser = async (req, res) => {
-    const { name, phone, email } = req.body;
-    const userId = req.params.id;
-
+export const updateAdmin = async (req, res) => {
     try {
-        const user = await Admin.findById( userId );
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const { name, phone, email } = req.body;
+        const { id: adminId } = req.params;
+
+        const admin = await Admin.findOne({ adminId });
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
         }
 
-        const updatedAdmin = await Admin.findOneAndUpdate(
-            { userId },
-            { name, phone, email },
-            { new: true }
-        );
+        const oldEmail = admin.email;
 
-        const updatedUser = await User.findOneAndUpdate(
-            { userId },
-            { email },
-            { new: true }
-        );
+        const [updatedAdmin, updatedUser] = await Promise.all([
+            Admin.findOneAndUpdate(
+                { adminId },
+                { name, phone, email },
+                { new: true }
+            ),
+            User.findOneAndUpdate(
+                { email: oldEmail },
+                { email },
+                { new: true }
+            )
+        ]);
 
-        res.status(200).json({ message: "User updated", updatedUser });
-
+        res.status(200).json({
+            message: "Admin updated",
+            admin: updatedAdmin
+        });
     } catch (err) {
-        res.status(500).json({ message: "Failed to update user details" });
+        console.error("Error updating admin:", err);
+        res.status(500).json({ message: "Failed to update admin details" });
     }
 };
 
 
-export const updateUserProfile = async (req, res) => {
-
-    const adminId = req.params.id;
-
+export const updateAdminProfile = async (req, res) => {
     try {
-        const user = await User.findOne({ adminId });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const { id: adminId } = req.params;
+        const admin = await Admin.findOne({ adminId });
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
         }
 
-        if (user.profileimage.publicId) {
-            await cloudinary.uploader.destroy(user.profileimage.publicId);
+        if (admin.profileimage.publicId) {
+            await cloudinary.uploader.destroy(admin.profileimage.publicId);
         }
 
         const {
             path: secure_url = null,
-            filename: public_id = null,
+            filename: public_id = null
         } = req.file || {};
 
-        user.profileimage.url = secure_url;
-        user.profileimage.publicId = public_id;
-        
-        await user.save();
+        admin.profileimage.url = secure_url;
+        admin.profileimage.publicId = public_id;
+        await admin.save();
 
-        // respond
         res.status(200).json({
             message: "Profile image updated",
-            profileImage: user.profileimage.url
+            profileImage: admin.profileimage.url
         });
-
+        
     } catch (err) {
         console.error("Error updating profile image:", err);
         res.status(500).json({ message: "Failed to update profile image" });
@@ -150,47 +147,56 @@ export const updateUserProfile = async (req, res) => {
 };
 
 
-export const deleteUser = async (req, res) => {
-    const userId = req.params.id;
-
+export const deleteAdmin = async (req, res) => {
     try {
-        const user = await User.findOne({userId});
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const { id: adminId } = req.params;
+        const admin = await Admin.findOne({ adminId });
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
         }
 
-        // delete profile image from Cloudinary
-        if (user.profileimage.publicId) {
-            await cloudinary.uploader.destroy(user.profileimage.publicId);
+        if (admin.profileimage.publicId) {
+            await cloudinary.uploader.destroy(admin.profileimage.publicId);
         }
 
-        // remove user from database
-        await User.findByIdAndDelete(userId);
-        res.status(200).json({ message: "User and profile image deleted successfully" });
+        await Promise.all([
+            Admin.deleteOne({ adminId }),
+            User.deleteOne({ email: admin.email })
+        ]);
 
+        res.status(200).json({ message: "Admin and user deleted successfully" });
     } catch (err) {
-        res.status(500).json({ message: "Failed to delete user" });
+        console.error("Error deleting admin:", err);
+        res.status(500).json({ message: "Failed to delete admin" });
     }
 };
 
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
-
     try {
+        const { email, password } = req.body;
+
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: "Invalid email" });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email" });
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid password" });
+        }
 
-        const payload = { userId: user._id };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "6h" });
+        const payload = { userId: user._id, usertype: user.usertype };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: "6h"
+        });
 
-        res.status(200).json({ message: "Login successful", token });
-
+        res.status(200).json({
+            message: "Login successful",
+            token
+        });
     } catch (err) {
-        console.error("Login Error:", err.message);
-        res.status(500).send("Server error");
+        console.error("Login error:", err);
+        res.status(500).json({ message: "Server error" });
     }
 };

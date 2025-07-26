@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import path from "path";
 
 import userRoutes from "./routes/userRoutes.js";
+import patientRoutes from "./routes/patientRoute.js";
 
 const app = express();
 const port = process.env.PORT;
@@ -14,6 +15,7 @@ const port = process.env.PORT;
 // routes files
 app.use("/uploads", express.static(path.resolve("uploads")));
 app.use("/users", userRoutes);
+app.use("/patient", patientRoutes);
 
 app.use(express.json());
 app.use(cors());
